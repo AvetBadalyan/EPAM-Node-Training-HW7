@@ -14,18 +14,22 @@ This project is a simple Product Management API built with Node.js, Express, and
 ## Project Structure
 
 - **src/**
+
   - **controllers/**: Contains the controller logic handling HTTP requests and responses.
-  - **services/**: Contains the service logic for data operations.
-  - **models/**: Defines TypeScript interfaces and models.
   - **data/**: Contains the `products.json` file with product data.
+  - **middleware/** Contains the middlewares like asyncHandler, errorMiddleware and checkObjectid
+  - **models/**: Defines TypeScript interfaces and models.
+  - **routes/**: Contains the routes
+  - **services/**: Contains the service logic for data operations.
+  - **index.ts** main server file
 
 ## Installation
 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/product-management-api.git
-   cd product-management-api
+   git clone https://github.com/AvetBadalyan/EPAM-Node-Training-HW7.git
+   cd EPAM-Node-Training-HW7
    ```
 
 2. Install the dependencies:
@@ -53,6 +57,7 @@ To run the server in development mode with hot-reloading:
 
 ```bash
 npm run dev
+
 Endpoints
 GET /products Retrieve all products or filter by category (query parameter category).
 GET /products/:id Retrieve a product by its ID.
