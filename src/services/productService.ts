@@ -1,21 +1,21 @@
 import { Product } from "../models/product";
 import { v4 as uuidv4 } from "uuid";
-import fs from "fs";
+import fs from "fs-extra";
 import path from "path";
 
 const dataFilePath = path.join(__dirname, "../data/products.json");
 
-const readData = (): Product[] => {
-  const rawData = fs.readFileSync(dataFilePath, "utf-8");
+const readData = async (): Promise<Product[]> => {
+  const rawData = await fs.readFile(dataFilePath, "utf-8");
   return JSON.parse(rawData).products;
 };
 
-const writeData = (data: Product[]): void => {
-  fs.writeFileSync(dataFilePath, JSON.stringify({ products: data }, null, 2));
+const writeData = async (data: Product[]): Promise<void> => {
+  await fs.writeFile(dataFilePath, JSON.stringify({ products: data }, null, 2));
 };
 
-export const getAllProducts = (category?: string): Product[] => {
-  const products = readData();
+export const getAllProducts = async (category?: string): Promise<Product[]> => {
+  const products = await readData();
   if (category) {
     return products.filter(
       (product) => product.category === category && !product.deleted
@@ -24,13 +24,17 @@ export const getAllProducts = (category?: string): Product[] => {
   return products.filter((product) => !product.deleted);
 };
 
-export const getProductById = (id: string): Product | undefined => {
-  const products = readData();
+export const getProductById = async (
+  id: string
+): Promise<Product | undefined> => {
+  const products = await readData();
   return products.find((product) => product.id === id && !product.deleted);
 };
 
-export const createProduct = (newProduct: Product): Product | null => {
-  const products = readData();
+export const createProduct = async (
+  newProduct: Product
+): Promise<Product | null> => {
+  const products = await readData();
 
   const existingProduct = products.find(
     (product) => product.id === newProduct.id
@@ -45,39 +49,39 @@ export const createProduct = (newProduct: Product): Product | null => {
   };
 
   products.push(productWithId);
-  writeData(products);
+  await writeData(products);
   return productWithId;
 };
 
-export const updateProduct = (
+export const updateProduct = async (
   id: string,
   updatedProduct: Product
-): Product | undefined => {
-  const products = readData();
+): Promise<Product | undefined> => {
+  const products = await readData();
   const index = products.findIndex((product) => product.id === id);
   if (index === -1 || products[index].deleted) return undefined;
   products[index] = { ...products[index], ...updatedProduct };
-  writeData(products);
+  await writeData(products);
   return products[index];
 };
 
-export const partiallyUpdateProduct = (
+export const partiallyUpdateProduct = async (
   id: string,
   street: string
-): Product | undefined => {
-  const products = readData();
+): Promise<Product | undefined> => {
+  const products = await readData();
   const index = products.findIndex((product) => product.id === id);
   if (index === -1 || products[index].deleted) return undefined;
   products[index].manufacturer.address.street = street;
-  writeData(products);
+  await writeData(products);
   return products[index];
 };
 
-export const deleteProduct = (id: string): boolean => {
-  const products = readData();
+export const deleteProduct = async (id: string): Promise<boolean> => {
+  const products = await readData();
   const index = products.findIndex((product) => product.id === id);
   if (index === -1 || products[index].deleted) return false;
   products[index].deleted = true;
-  writeData(products);
+  await writeData(products);
   return true;
 };

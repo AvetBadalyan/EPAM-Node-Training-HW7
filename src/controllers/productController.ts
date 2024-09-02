@@ -11,61 +11,71 @@ export const getAllProducts = asyncHandler(
   }
 );
 
-export const getProductById = (req: Request, res: Response): void => {
-  const id = req.params.id;
-  const product = productService.getProductById(id);
-  if (!product || product.deleted) {
-    res.status(404).json({ message: "Product not found" });
-    return;
+export const getProductById = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const id = req.params.id;
+    const product = await productService.getProductById(id);
+    if (!product || product.deleted) {
+      res.status(404).json({ message: "Product not found" });
+      return;
+    }
+    res.json(product);
   }
-  res.json(product);
-};
+);
 
-export const createProduct = (req: Request, res: Response): void => {
-  const { stock, price } = req.body;
-  if (stock.available < 0 || price <= 0) {
-    res.status(400).json({ message: "Invalid stock or price values" });
-    return;
+export const createProduct = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { stock, price } = req.body;
+    if (stock.available < 0 || price <= 0) {
+      res.status(400).json({ message: "Invalid stock or price values" });
+      return;
+    }
+    const newProduct = req.body as Product;
+    const createdProduct = await productService.createProduct(newProduct);
+
+    if (!createdProduct) {
+      res.status(400).json({ message: "Product with this ID already exists" });
+      return;
+    }
+
+    res.status(201).json(createdProduct);
   }
-  const newProduct = req.body as Product;
-  const createdProduct = productService.createProduct(newProduct);
+);
 
-  if (!createdProduct) {
-    res.status(400).json({ message: "Product with this ID already exists" });
-    return;
+export const updateProduct = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const id = req.params.id;
+    const updatedProduct = req.body as Product;
+    const result = await productService.updateProduct(id, updatedProduct);
+    if (!result) {
+      res.status(404).json({ message: "Product not found" });
+      return;
+    }
+    res.json(result);
   }
+);
 
-  res.status(201).json(createdProduct);
-};
-
-export const updateProduct = (req: Request, res: Response): void => {
-  const id = req.params.id;
-  const updatedProduct = req.body as Product;
-  const result = productService.updateProduct(id, updatedProduct);
-  if (!result) {
-    res.status(404).json({ message: "Product not found" });
-    return;
+export const partiallyUpdateProduct = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const id = req.params.id;
+    const street = req.body.street as string;
+    const result = await productService.partiallyUpdateProduct(id, street);
+    if (!result) {
+      res.status(404).json({ message: "Product not found" });
+      return;
+    }
+    res.json(result);
   }
-  res.json(result);
-};
+);
 
-export const partiallyUpdateProduct = (req: Request, res: Response): void => {
-  const id = req.params.id;
-  const street = req.body.street as string;
-  const result = productService.partiallyUpdateProduct(id, street);
-  if (!result) {
-    res.status(404).json({ message: "Product not found" });
-    return;
+export const deleteProduct = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const id = req.params.id;
+    const result = await productService.deleteProduct(id);
+    if (!result) {
+      res.status(404).json({ message: "Product not found" });
+      return;
+    }
+    res.status(204).json({ message: "Product successfully deleted" });
   }
-  res.json(result);
-};
-
-export const deleteProduct = (req: Request, res: Response): void => {
-  const id = req.params.id;
-  const result = productService.deleteProduct(id);
-  if (!result) {
-    res.status(404).json({ message: "Product not found" });
-    return;
-  }
-  res.status(204).json({ message: "Product successfully deleted" });
-};
+);
