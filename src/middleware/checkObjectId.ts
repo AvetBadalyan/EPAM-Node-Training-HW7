@@ -7,6 +7,11 @@ const checkValidId = (req: Request, res: Response, next: NextFunction) => {
     res.status(400).json({ message: 'Invalid ID format' });
     return;
   }
+
+  if (!isUuid(id) && isNaN(Number(id))) {
+    res.status(400).json({ message: 'ID must be a valid UUID or a numeric string' });
+    return;
+  }
   next();
 };
 
