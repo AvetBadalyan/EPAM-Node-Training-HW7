@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Product } from "../models/product";
 import * as productService from "../services/productService";
 import asyncHandler from "../middleware/asyncHandler";
+import { validateProduct, validatePartialProduct } from "../utils/validationUtils";
 
 export const getAllProducts = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -25,14 +26,15 @@ export const getProductById = asyncHandler(
 
 export const createProduct = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { stock, price } = req.body;
-    if (stock.available < 0 || price <= 0) {
-      res.status(400).json({ message: "Invalid stock or price values" });
+    const newProduct = req.body;
+
+    const validationError = validateProduct(newProduct);
+    if (validationError) {
+      res.status(400).json({ message: validationError });
       return;
     }
-    const newProduct = req.body as Product;
-    const createdProduct = await productService.createProduct(newProduct);
 
+    const createdProduct = await productService.createProduct(newProduct);
     if (!createdProduct) {
       res.status(400).json({ message: "Product with this ID already exists" });
       return;
@@ -45,10 +47,17 @@ export const createProduct = asyncHandler(
 export const updateProduct = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const id = req.params.id;
-    const updatedProduct = req.body as Product;
+    const updatedProduct = req.body;
+
+    const validationError = validateProduct(updatedProduct, true);
+    if (validationError) {
+      res.status(400).json({ message: validationError });
+      return;
+    }
+
     const result = await productService.updateProduct(id, updatedProduct);
     if (!result) {
-      res.status(404).json({ message: "Product not found" });
+      res.status(404).json({ message: "Invalid data or product not found" });
       return;
     }
     res.json(result);
@@ -58,10 +67,17 @@ export const updateProduct = asyncHandler(
 export const partiallyUpdateProduct = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const id = req.params.id;
-    const street = req.body.street as string;
-    const result = await productService.partiallyUpdateProduct(id, street);
+    const updates = req.body;
+
+    const validationError = validatePartialProduct(updates);
+    if (validationError) {
+      res.status(400).json({ message: validationError });
+      return;
+    }
+
+    const result = await productService.partiallyUpdateProduct(id, updates);
     if (!result) {
-      res.status(404).json({ message: "Product not found" });
+      res.status(404).json({ message: "Product not found or invalid data" });
       return;
     }
     res.json(result);

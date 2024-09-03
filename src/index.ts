@@ -1,9 +1,8 @@
 import express from "express";
 import productRoutes from "./routes/productRoutes";
 import { errorHandler } from "./middleware/errorMiddleware";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
-
 
 const app = express();
 const PORT = process.env.PORT || 5000;
