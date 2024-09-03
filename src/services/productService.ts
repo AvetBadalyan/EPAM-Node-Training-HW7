@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import fs from "fs-extra";
 import path from "path";
 
-const dataFilePath = path.join(__dirname, "../data/products.json");
+const dataFilePath = path.join(__dirname, "..", "data", "products.json");
 
 const readData = async (): Promise<Product[]> => {
   const rawData = await fs.readFile(dataFilePath, "utf-8");
