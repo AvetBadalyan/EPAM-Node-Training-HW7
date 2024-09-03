@@ -87,11 +87,14 @@ export const partiallyUpdateProduct = asyncHandler(
 export const deleteProduct = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const id = req.params.id;
-    const result = await productService.deleteProduct(id);
-    if (!result) {
+    const deletedProduct = await productService.deleteProduct(id);
+    if (!deletedProduct) {
       res.status(404).json({ message: "Product not found" });
       return;
     }
-    res.status(204).json({ message: "Product successfully deleted" });
+    res.status(200).json({
+      message: `Product [ID: ${deletedProduct.id} & Name: ${deletedProduct.name}] successfully deleted`
+    });
   }
 );
+

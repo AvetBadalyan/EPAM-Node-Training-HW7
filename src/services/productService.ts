@@ -17,16 +17,21 @@ const writeData = async (data: Product[]): Promise<void> => {
 export const getAllProducts = async (category?: string): Promise<Product[]> => {
   const products = await readData();
   return products.filter(
-    (product) => !product.deleted && (!category || product.category === category)
+    (product) =>
+      !product.deleted && (!category || product.category === category)
   );
 };
 
-export const getProductById = async (id: string): Promise<Product | undefined> => {
+export const getProductById = async (
+  id: string
+): Promise<Product | undefined> => {
   const products = await readData();
   return products.find((product) => product.id === id && !product.deleted);
 };
 
-export const createProduct = async (newProduct: Product): Promise<Product | null> => {
+export const createProduct = async (
+  newProduct: Product
+): Promise<Product | null> => {
   const products = await readData();
   if (products.some((product) => product.id === newProduct.id)) {
     return null;
@@ -42,7 +47,10 @@ export const createProduct = async (newProduct: Product): Promise<Product | null
   return productWithId;
 };
 
-export const updateProduct = async (id: string, updatedProduct: Partial<Product>): Promise<Product | undefined> => {
+export const updateProduct = async (
+  id: string,
+  updatedProduct: Partial<Product>
+): Promise<Product | undefined> => {
   const products = await readData();
   const index = products.findIndex((product) => product.id === id);
   if (index === -1 || products[index].deleted) return undefined;
@@ -52,7 +60,10 @@ export const updateProduct = async (id: string, updatedProduct: Partial<Product>
   return products[index];
 };
 
-export const partiallyUpdateProduct = async (id: string, updates: Partial<Product>): Promise<Product | undefined> => {
+export const partiallyUpdateProduct = async (
+  id: string,
+  updates: Partial<Product>
+): Promise<Product | undefined> => {
   const products = await readData();
   const index = products.findIndex((product) => product.id === id);
   if (index === -1 || products[index].deleted) return undefined;
@@ -60,13 +71,19 @@ export const partiallyUpdateProduct = async (id: string, updates: Partial<Produc
   const product = products[index];
   const updatedProduct = {
     ...product,
-    manufacturer: {
-      ...product.manufacturer,
-      address: {
-        ...product.manufacturer?.address,
-        ...updates.manufacturer?.address,
-      },
-    },
+    ...updates,
+    manufacturer: updates.manufacturer
+      ? {
+          ...product.manufacturer,
+          ...updates.manufacturer,
+          address: updates.manufacturer.address
+            ? {
+                ...product.manufacturer?.address,
+                ...updates.manufacturer.address,
+              }
+            : product.manufacturer?.address,
+        }
+      : product.manufacturer,
   };
 
   products[index] = updatedProduct;
@@ -74,12 +91,13 @@ export const partiallyUpdateProduct = async (id: string, updates: Partial<Produc
   return updatedProduct;
 };
 
-export const deleteProduct = async (id: string): Promise<boolean> => {
+export const deleteProduct = async (id: string): Promise<Product | null> => {
   const products = await readData();
   const index = products.findIndex((product) => product.id === id);
-  if (index === -1 || products[index].deleted) return false;
+  if (index === -1 || products[index].deleted) return null;
 
-  products[index].deleted = true;
+  const deletedProduct = products[index];
+  deletedProduct.deleted = true;
   await writeData(products);
-  return true;
+  return deletedProduct;
 };

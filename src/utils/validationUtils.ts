@@ -10,14 +10,14 @@ export const validateProduct = (
       !product.description?.trim() ||
       !product.category?.trim() ||
       !product.stock ||
-      !product.manufacturer ||
-      !product.manufacturer.name?.trim() ||
-      !product.manufacturer.address
+      (product.manufacturer &&
+        (!product.manufacturer.name?.trim() || !product.manufacturer.address))
     ) {
       return "Missing required fields or empty string values";
     }
   }
 
+  // Price validation
   if (
     product.price !== undefined &&
     (typeof product.price !== "number" ||
@@ -27,6 +27,7 @@ export const validateProduct = (
     return "Price must be a valid positive number";
   }
 
+  // Stock validation
   if (product.stock?.available !== undefined) {
     if (
       typeof product.stock.available !== "number" ||
@@ -47,6 +48,7 @@ export const validateProduct = (
     }
   }
 
+  // Manufacturer address validation (if manufacturer is provided)
   if (product.manufacturer?.address) {
     const { street, city, zip } = product.manufacturer.address;
     if (!street?.trim() || !city?.trim() || !zip?.trim()) {
